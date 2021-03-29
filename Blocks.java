@@ -5,8 +5,11 @@ import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import jdk.nashorn.internal.ir.ReturnNode;
+import sun.rmi.runtime.NewThreadAction;
 
 public class Blocks {
 
@@ -14,7 +17,11 @@ public class Blocks {
     private Timeline _timeline;
     private Game.KeyHandler _keyHandler;
     private Rectangle[] _gameArray;
+    private Rectangle[] _gameArray2;
+    private Polygon[] _accentArray;
     private Rectangle[][] _boardArray;
+    private Rectangle[][] _boardArray2;
+    private Polygon[][] _accentBoardArray;
     private boolean _isOBlock;
 
     public Blocks(Pane gamePane, Timeline timeline, Game.KeyHandler keyHandler) {
@@ -23,10 +30,15 @@ public class Blocks {
         _timeline = timeline;
         _keyHandler = keyHandler;
         _gameArray = new Rectangle[4];
+        _gameArray2 = new Rectangle[4];
+        _accentArray = new Polygon[4];
         _boardArray = new Rectangle[22][12];
+        _boardArray2 = new Rectangle[22][12];
+        _accentBoardArray = new Polygon[22][12];
         _isOBlock = false;
         this.generateBorder();
         this.generateRandomBlock();
+        //this.generateIBlock();
     }
 
     /**
@@ -40,6 +52,8 @@ public class Blocks {
             for (int i = 0; i < 4; i++) {
 
                 _gameArray[i].setX(_gameArray[i].getX() - Constants.SQUARE_WIDTH);
+                _gameArray2[i].setX(_gameArray2[i].getX() - Constants.SQUARE_WIDTH);
+                _accentArray[i].setLayoutX(_accentArray[i].getLayoutX() - Constants.SQUARE_WIDTH);
             }
         }
     }
@@ -56,6 +70,8 @@ public class Blocks {
             for (int i = 0; i < 4; i++) {
 
                 _gameArray[i].setX(_gameArray[i].getX() + Constants.SQUARE_WIDTH);
+                _gameArray2[i].setX(_gameArray2[i].getX() + Constants.SQUARE_WIDTH);
+                _accentArray[i].setLayoutX(_accentArray[i].getLayoutX() + Constants.SQUARE_WIDTH);
             }
         }
     }
@@ -77,11 +93,15 @@ public class Blocks {
             if (!fallCollision) {
 
                 _gameArray[i].setY(_gameArray[i].getY() + Constants.SQUARE_WIDTH);
+                _gameArray2[i].setY(_gameArray2[i].getY() + Constants.SQUARE_WIDTH);
+                _accentArray[i].setLayoutY(_accentArray[i].getLayoutY() + Constants.SQUARE_WIDTH);
             }
 
             if (fallCollision) {
 
                 _boardArray[y][x] = _gameArray[i];
+                _boardArray2[y][x] = _gameArray2[i];
+                _accentBoardArray[y][x] = _accentArray[i];
             }
         }
 
@@ -173,6 +193,10 @@ public class Blocks {
 
                     _gameArray[i].setX(newXLocation);
                     _gameArray[i].setY(newYLocation);
+                    _gameArray2[i].setX(newXLocation);
+                    _gameArray2[i].setY(newYLocation);
+                    _accentArray[i].setLayoutX(newXLocation);
+                    _accentArray[i].setLayoutY(newYLocation);
                 }
             }
         }
@@ -193,7 +217,10 @@ public class Blocks {
                 //graphically and logically removes the cleared line
                 for (int j = 1; j < 11; j++) {
 
-                    _gamePane.getChildren().remove(_boardArray[i][j]);
+                    _gamePane.getChildren().removeAll(_boardArray[i][j], _boardArray2[i][j], _accentBoardArray[i][j]);
+                    _boardArray[i][j] = null;
+                    _boardArray2[i][j] = null;
+                    _accentBoardArray[i][j] = null;
                 }
 
                 //graphically and logically moves down rows above the clear row
@@ -204,9 +231,14 @@ public class Blocks {
                         if (_boardArray[k][l] != null) {
 
                             _boardArray[k][l].setY(_boardArray[k][l].getY() + Constants.SQUARE_WIDTH);
+                            _boardArray2[k][l].setY(_boardArray2[k][l].getY() + Constants.SQUARE_WIDTH);
+                            _accentBoardArray[k][l].setLayoutY(_accentBoardArray[k][l].getLayoutY() + Constants.SQUARE_WIDTH);
+
                         }
 
                         _boardArray[k][l] = _boardArray[k - 1][l];
+                        _boardArray2[k][l] = _boardArray2[k - 1][l];
+                        _accentBoardArray[k][l] = _accentBoardArray[k - 1][l];
                     }
                 }
             }
@@ -244,41 +276,59 @@ public class Blocks {
 
                 if (i == 0) {
 
-                    _boardArray[i][j] = new Rectangle(j*Constants.SQUARE_WIDTH, 0, Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH);
-                    _boardArray[i][j].setFill(Color.GRAY);
-                    _boardArray[i][j].setStroke(Color.BLACK);
-                    _boardArray[i][j].setStrokeWidth(1.0);
-                    _gamePane.getChildren().add(_boardArray[i][j]);
+                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, 0,
+                            Constants.SQUARE_WIDTH, Color.BLACK);
+                    this.generateSquare(j*Constants.SQUARE_WIDTH, 0,
+                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
+                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, 0);
                 }
 
                 if (i == 21) {
 
-                    _boardArray[i][j] = new Rectangle(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH);
-                    _boardArray[i][j].setFill(Color.GRAY);
-                    _boardArray[i][j].setStroke(Color.BLACK);
-                    _boardArray[i][j].setStrokeWidth(1.0);
-                    _gamePane.getChildren().add(_boardArray[i][j]);
+                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
+                            Constants.SQUARE_WIDTH, Color.BLACK);
+                    this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
+                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
+                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
                 }
 
                 if (j == 0) {
 
-                    _boardArray[i][j] = new Rectangle(0, i*Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH);
-                    _boardArray[i][j].setFill(Color.GRAY);
-                    _boardArray[i][j].setStroke(Color.BLACK);
-                    _boardArray[i][j].setStrokeWidth(1.0);
-                    _gamePane.getChildren().add(_boardArray[i][j]);
+                    _boardArray[i][j] = this.generateSquare(0, i*Constants.SQUARE_WIDTH,
+                            Constants.SQUARE_WIDTH, Color.BLACK);
+                    this.generateSquare(0, i*Constants.SQUARE_WIDTH,
+                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
+                    this.generateAccentPolygon(0, i*Constants.SQUARE_WIDTH);
                 }
 
                 if (j == 11) {
 
-                    _boardArray[i][j] = new Rectangle(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH, Constants.SQUARE_WIDTH);
-                    _boardArray[i][j].setFill(Color.GRAY);
-                    _boardArray[i][j].setStroke(Color.BLACK);
-                    _boardArray[i][j].setStrokeWidth(1.0);
-                    _gamePane.getChildren().add(_boardArray[i][j]);
+                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
+                            Constants.SQUARE_WIDTH, Color.BLACK);
+                    this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
+                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
+                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
                 }
             }
         }
+    }
+
+    public Rectangle generateSquare(int x, int y, double width, Color color) {
+
+        Rectangle square = new Rectangle(x, y, width, width);
+        square.setFill(color);
+        _gamePane.getChildren().add(square);
+        return square;
+    }
+
+    public Polygon generateAccentPolygon(int x, int y) {
+
+        Polygon polygon = new Polygon(Constants.ACCENT_POLYGON_COORDS);
+        polygon.setLayoutX(x);
+        polygon.setLayoutY(y);
+        polygon.setFill(Color.WHITE);
+        _gamePane.getChildren().add(polygon);
+        return polygon;
     }
 
     /**
@@ -290,13 +340,12 @@ public class Blocks {
 
         for (int i = 0; i < 4; i++) {
 
-            _gameArray[i] = new Rectangle(Constants.MID_SCENE_WIDTH + coords[i][0],
-                    Constants.SQUARE_WIDTH + coords[i][1], Constants.SQUARE_WIDTH,
-                    Constants.SQUARE_WIDTH);
-            _gameArray[i].setFill(color);
-            _gameArray[i].setStroke(Color.BLACK);
-            _gameArray[i].setStrokeWidth(1.0);
-            _gamePane.getChildren().add(_gameArray[i]);
+            _gameArray[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
+                    Constants.SQUARE_WIDTH + coords[i][1], Constants.SQUARE_WIDTH, Color.BLACK);
+            _gameArray2[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
+                    Constants.SQUARE_WIDTH + coords[i][1], Constants.COLOR_SQUARE_WIDTH, color);
+            _accentArray[i] = this.generateAccentPolygon(Constants.MID_SCENE_WIDTH + coords[i][0],
+                    Constants.SQUARE_WIDTH + coords[i][1]);
         }
 
         this.gameOver();
@@ -322,12 +371,7 @@ public class Blocks {
 
             _timeline.stop();
             Label gameOverLabel = new Label("game over. do better <3");
-
-            //Font font = Font.loadFont("C:Users/zheng/Fonts/PressStart2P-Regular", 45);
-            //gameOverLabel.setFont(font);
-
-            gameOverLabel.setFont(Font.font(20));
-
+            gameOverLabel.setFont(Font.font(15));
             gameOverLabel.setLayoutX(Constants.GAME_OVER_X);
             gameOverLabel.setLayoutY(Constants.LABEL_Y);
             _gamePane.getChildren().add(gameOverLabel);
@@ -375,7 +419,7 @@ public class Blocks {
     public void generateIBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.I_BLOCK_COORDS, Color.CYAN);
+        generateBlock(Constants.I_BLOCK_COORDS, Color.PALETURQUOISE);
     }
 
     /**
@@ -385,7 +429,7 @@ public class Blocks {
     public void generateTBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.T_BLOCK_COORDS, Color.PURPLE);
+        generateBlock(Constants.T_BLOCK_COORDS, Color.PLUM);
     }
 
     /**
@@ -395,7 +439,7 @@ public class Blocks {
     public void generateOBlock() {
 
         _isOBlock = true;
-        generateBlock(Constants.O_BLOCK_COORDS, Color.YELLOW);
+        generateBlock(Constants.O_BLOCK_COORDS, Color.KHAKI);
     }
 
     /**
@@ -405,7 +449,7 @@ public class Blocks {
     public void generateJBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.J_BLOCK_COORDS, Color.BLUE);
+        generateBlock(Constants.J_BLOCK_COORDS, Color.LIGHTSTEELBLUE);
     }
 
     /**
@@ -415,7 +459,7 @@ public class Blocks {
     public void generateLBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.L_BLOCK_COORDS, Color.ORANGE);
+        generateBlock(Constants.L_BLOCK_COORDS, Color.LIGHTSALMON);
     }
 
     /**
@@ -425,7 +469,7 @@ public class Blocks {
     public void generateSBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.S_BLOCK_COORDS, Color.LIME);
+        generateBlock(Constants.S_BLOCK_COORDS, Color.PALEGREEN);
     }
 
     /**
@@ -435,6 +479,6 @@ public class Blocks {
     public void generateZBlock() {
 
         _isOBlock = false;
-        generateBlock(Constants.Z_BLOCK_COORDS, Color.RED);
+        generateBlock(Constants.Z_BLOCK_COORDS, Color.PINK);
     }
 }

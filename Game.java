@@ -47,7 +47,7 @@ public class Game {
     public void setUpPauseLabel() {
 
         _pauseLabel = new Label("paused");
-        _pauseLabel.setFont(Font.font(20));
+        _pauseLabel.setFont(Font.font(15));
         _pauseLabel.setLayoutX(Constants.PAUSED_X);
         _pauseLabel.setLayoutY(Constants.LABEL_Y);
     }
@@ -59,7 +59,7 @@ public class Game {
 
             KeyCode keyPressed = e.getCode();
 
-            if (!_pauseGame) {
+            //if (!_pauseGame) {
 
                 switch (keyPressed) {
 
@@ -79,7 +79,7 @@ public class Game {
                         _blocks.drop();
                         break;
                 }
-            }
+            //}
 
             if (keyPressed == KeyCode.P){
 
