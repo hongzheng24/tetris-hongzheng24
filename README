@@ -1,0 +1,41 @@
+Tetris README
+
+Handin: This is my final handin.
+
+Design Choices:
+
+    Note: In the comments in the code, I often use "pieces" and "blocks" interchangeably. If I am referring to the
+    actual squares that make up the pieces, I will use "squares."
+
+    In this project, there are 8 classes: App, Blocks, Constants, Game, PaneOrganizer, ButtonHandler, TimeHandler, and
+    KeyHandler. The PaneOrganizer and Game classes are responsible for setting up the game and defining ButtonHandler,
+    TimeHandler, and KeyHandler. The Blocks class defines most of the methods that are responsible for the game logic.
+    Instead of creating a Square class, as recommended by the TA's, I created the helper method generateSquares()
+    in Blocks that creates and returns a square based on the x-coordinate, y-coordinate, side length, and color passed
+    in as arguments. I found creating a separate class to be inefficient as I would have to also define a getter method
+    in the Square class that would return the square made in the class. In the Blocks class, I defined several helper
+    methods that are used multiple times in other methods in the class. generateSquares() was an example. Another
+    example is checkCollision(), which checks for move validity and is used in the moveLeft(), moveRight(), fall(),
+    drop(), and gameOver() methods. Using helper methods helped de-clutter code and remove repeated code. A method
+    worth mentioning is the generateRandomBlock() method in Blocks. This method uses the factory pattern design
+    to randomly create one of 7 pieces.
+
+Known Bugs: No known bugs.
+
+Extra Credit:
+
+    I added composite shapes to each square. Each square is composed of a black square that represents a
+    shadow, a smaller colored square, and a white polygon that represents a sheen. For each of these shapes, I added
+    them to a separate piece array and a separate board array. I also modified the moveLeft(), moveRight(), fall(),
+    rotate(), drop(), clearLine(), generateBorderBlock(), and generateBlock() methods to work with the new shapes.
+    _blockArray is a 1D array that contains the black squares that are part of the currently falling piece, and
+    _boardArray is a 2D array that contains the border and keeps track of which pieces have fallen and are part of the
+    board. Most of the methods defined in the Blocks class uses these two arrays to make decisions. Similarly,
+    _blockArray2 and _boardArray2 handles the colored square, and _accentArray and _accentBoardArray handles the white
+    accent polygons. These arrays do not affect the game logic, but they make piece movement and line clearing easier.
+    At first, I tried to use a 3D 22x12x3 array to handle all the shapes-- the black squares would be in the 0th
+    z-coordinate, the colored squares would be in the 1st z-coordinate, and the polygons would be in the 2nd z-coordinate.
+    However, it was too difficult to implement, and I was not comfortable with 3D arrays so I decided to just make
+    separate arrays for each shape. The extra credit took me about 4 hours to implement.
+
+Hours: This project took me approximately 48 hours.

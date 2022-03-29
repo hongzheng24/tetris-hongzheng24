@@ -12,6 +12,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.util.Duration;
 
+/**
+ * The Game class sets up the timeline, defines the TimeHandler class, defines the KeyHandler class, and creates a
+ * label for when the game is paused. Game has an association with the PaneOrganizer class so that Game can access
+ * _gamePane.
+ */
 public class Game {
 
     private Pane _gamePane;
@@ -21,6 +26,10 @@ public class Game {
     private boolean _pauseGame;
     private Label _pauseLabel;
 
+    /**
+     * This constructor instantiates KeyHandler, calls the setUpPauseLabel() and the setUpTimeline()
+     * methods, and instantiates the Blocks class and passes in _gamePane, _timeline, and _keyHandler.
+     */
     public Game(Pane gamePane) {
 
         _gamePane = gamePane;
@@ -28,11 +37,14 @@ public class Game {
         _pauseGame = false;
         this.setUpPauseLabel();
         _gamePane.addEventHandler(KeyEvent.KEY_PRESSED, _keyHandler);
-        this.setupTimeline();
+        this.setUpTimeline();
         _blocks = new Blocks(_gamePane, _timeline, _keyHandler);
     }
 
-    public void setupTimeline() {
+    /**
+     * This method instantiates KeyFrame, Timeline, and calls play() on _timeline. It sets up and starts the animation.
+     */
+    public void setUpTimeline() {
 
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), new TimeHandler());
         _timeline = new Timeline(keyFrame);
@@ -47,19 +59,27 @@ public class Game {
     public void setUpPauseLabel() {
 
         _pauseLabel = new Label("paused");
-        _pauseLabel.setFont(Font.font(15));
+        _pauseLabel.setFont(Font.font(Constants.FONT_SIZE));
         _pauseLabel.setLayoutX(Constants.PAUSED_X);
         _pauseLabel.setLayoutY(Constants.LABEL_Y);
     }
 
+    /**
+     * The KeyHandler class is responsible for what happens when keys are pressed. The pause() method is defined in
+     * this method so that it can be called.
+     */
     public class KeyHandler implements EventHandler<KeyEvent> {
 
+        /**
+         * This method uses a switch statement to decide what will happen when a key is pressed. Using an if statement,
+         * the method also stops keys other than the P key from working when the game is paused.
+         */
         @Override
         public void handle(KeyEvent e) {
 
             KeyCode keyPressed = e.getCode();
 
-            //if (!_pauseGame) {
+            if (!_pauseGame) {
 
                 switch (keyPressed) {
 
@@ -79,7 +99,7 @@ public class Game {
                         _blocks.drop();
                         break;
                 }
-            //}
+            }
 
             if (keyPressed == KeyCode.P){
 
@@ -89,6 +109,10 @@ public class Game {
             e.consume();
         }
 
+        /**
+         * Using if statements and a boolean variable, this method pauses/unpauses the game and adds/remove the pause
+         * label.
+         */
         public void pause() {
 
             if (!_pauseGame) {
@@ -107,8 +131,14 @@ public class Game {
         }
     }
 
+    /**
+     * The TimeHandler class is responsible for the animation of the game.
+     */
     private class TimeHandler implements EventHandler<ActionEvent> {
 
+        /**
+         * This method calls the fall() and clearLine() methods.
+         */
         @Override
         public void handle(ActionEvent event) {
 

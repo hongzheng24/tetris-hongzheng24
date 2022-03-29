@@ -10,7 +10,8 @@ import javafx.stage.Stage;
  * The main method of this application calls the start method. You
  * will need to fill in the start method to instantiate your game.
  *
- * Class comments here...
+ * The App class instantiates PaneOrganizer, creates a new Scene, sets the title of the Stage, and makes the Stage
+ * appear on screen.
  *
  */
 

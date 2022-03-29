@@ -8,29 +8,39 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import jdk.nashorn.internal.ir.ReturnNode;
-import sun.rmi.runtime.NewThreadAction;
 
+/**
+ * This is the Blocks class. It instantiates the arrays, generates squares used for making the border and the pieces,
+ * generates the aforementioned border and pieces, defines methods for the movement of pieces, defines methods for the
+ * clearing of lines, and checks to see if the game is lost. In addition, this class also instantiates extra squares
+ * and polygons that are used to decorate the blocks. Blocks has an association with the Game class so Blocks can
+ * access _gamePane, _timeline, and _keyHandler. These are used to graphically add shapes, stop the timeline, and stop
+ * the KeyHandler, respectively.
+ */
 public class Blocks {
 
     private Pane _gamePane;
     private Timeline _timeline;
     private Game.KeyHandler _keyHandler;
-    private Rectangle[] _gameArray;
-    private Rectangle[] _gameArray2;
+    private Rectangle[] _blockArray;
+    private Rectangle[] _blockArray2;
     private Polygon[] _accentArray;
     private Rectangle[][] _boardArray;
     private Rectangle[][] _boardArray2;
     private Polygon[][] _accentBoardArray;
     private boolean _isOBlock;
 
+    /**
+     * The Blocks constructor defines the instance variables, instantiates all of the arrays, and calls the method that
+     * generates the border and the method that generates a random piece.
+     */
     public Blocks(Pane gamePane, Timeline timeline, Game.KeyHandler keyHandler) {
 
         _gamePane = gamePane;
         _timeline = timeline;
         _keyHandler = keyHandler;
-        _gameArray = new Rectangle[4];
-        _gameArray2 = new Rectangle[4];
+        _blockArray = new Rectangle[4];
+        _blockArray2 = new Rectangle[4];
         _accentArray = new Polygon[4];
         _boardArray = new Rectangle[22][12];
         _boardArray2 = new Rectangle[22][12];
@@ -38,12 +48,12 @@ public class Blocks {
         _isOBlock = false;
         this.generateBorder();
         this.generateRandomBlock();
-        //this.generateIBlock();
     }
 
     /**
      * This method moves a piece left one space only if the new location of the piece is not occupied by blocks. This
-     * is called in the handle() method in KeyHandler when the left arrow key is pressed.
+     * is called in the handle() method in KeyHandler when the left arrow key is pressed. It uses the checkCollision()
+     * method to check if the new location is occupied by other squares.
      */
     public void moveLeft() {
 
@@ -51,8 +61,8 @@ public class Blocks {
 
             for (int i = 0; i < 4; i++) {
 
-                _gameArray[i].setX(_gameArray[i].getX() - Constants.SQUARE_WIDTH);
-                _gameArray2[i].setX(_gameArray2[i].getX() - Constants.SQUARE_WIDTH);
+                _blockArray[i].setX(_blockArray[i].getX() - Constants.SQUARE_WIDTH);
+                _blockArray2[i].setX(_blockArray2[i].getX() - Constants.SQUARE_WIDTH);
                 _accentArray[i].setLayoutX(_accentArray[i].getLayoutX() - Constants.SQUARE_WIDTH);
             }
         }
@@ -61,7 +71,7 @@ public class Blocks {
     /**
      * Similarly to the moveLeft() method, this method moves a piece right one space only if the new location of the
      * piece is not already occupied by blocks. This is called in the handle() method in KeyHandler when the right
-     * arrow key is pressed.
+     * arrow key is pressed. It uses the checkCollision() method to check if the new location is occupied by other squares.
      */
     public void moveRight() {
 
@@ -69,8 +79,8 @@ public class Blocks {
 
             for (int i = 0; i < 4; i++) {
 
-                _gameArray[i].setX(_gameArray[i].getX() + Constants.SQUARE_WIDTH);
-                _gameArray2[i].setX(_gameArray2[i].getX() + Constants.SQUARE_WIDTH);
+                _blockArray[i].setX(_blockArray[i].getX() + Constants.SQUARE_WIDTH);
+                _blockArray2[i].setX(_blockArray2[i].getX() + Constants.SQUARE_WIDTH);
                 _accentArray[i].setLayoutX(_accentArray[i].getLayoutX() + Constants.SQUARE_WIDTH);
             }
         }
@@ -79,7 +89,8 @@ public class Blocks {
     /**
      * Similarly to the moveLeft() and moveRight() methods, this method moves a piece down one space only if the new
      * location of the piece is not already occupied by blocks. When a piece stops falling, it is added to _boardArray.
-     * This method is called in the handle() method in TimeHandler.
+     * This method is called in the handle() method in TimeHandler. It uses the checkCollision() method to check if the
+     * new location is occupied by other squares.
      */
     public void fall() {
 
@@ -87,20 +98,20 @@ public class Blocks {
 
         for (int i = 0; i < 4; i++) {
 
-            int x = (int) (_gameArray[i].getX()/Constants.SQUARE_WIDTH);
-            int y = (int) (_gameArray[i].getY()/Constants.SQUARE_WIDTH);
+            int x = (int) (_blockArray[i].getX()/Constants.SQUARE_WIDTH);
+            int y = (int) (_blockArray[i].getY()/Constants.SQUARE_WIDTH);
 
             if (!fallCollision) {
 
-                _gameArray[i].setY(_gameArray[i].getY() + Constants.SQUARE_WIDTH);
-                _gameArray2[i].setY(_gameArray2[i].getY() + Constants.SQUARE_WIDTH);
+                _blockArray[i].setY(_blockArray[i].getY() + Constants.SQUARE_WIDTH);
+                _blockArray2[i].setY(_blockArray2[i].getY() + Constants.SQUARE_WIDTH);
                 _accentArray[i].setLayoutY(_accentArray[i].getLayoutY() + Constants.SQUARE_WIDTH);
             }
 
             if (fallCollision) {
 
-                _boardArray[y][x] = _gameArray[i];
-                _boardArray2[y][x] = _gameArray2[i];
+                _boardArray[y][x] = _blockArray[i];
+                _boardArray2[y][x] = _blockArray2[i];
                 _accentBoardArray[y][x] = _accentArray[i];
             }
         }
@@ -114,6 +125,7 @@ public class Blocks {
     /**
      * This method drops a piece until it cannot fall anymore. Using a for loop, the piece is moved down one square
      * for each iteration of the loop. However, if the new location of the piece is occupied, the loop is broken.
+     * It checks for this using the checkCollision() method.
      */
     public void drop() {
 
@@ -134,24 +146,29 @@ public class Blocks {
         }
     }
 
+    /**
+     * This method checks to see if the space a piece wants to move into is already occupied. It does this by checking
+     * if the new location in the array is null or not. This method takes in two integers as arguments; one is the
+     * xDisplacement, and one is yDisplacement. These two values are the differences between the coordinates the old
+     * location of the piece and coordinates of the new location. It returns true if the new location is occupied and
+     * returns false if not. This method is called in the moveLeft(), moveRight(), fall(), drop(), and gameOver() methods.
+     */
     public boolean checkCollision(int xDisplacement, int yDisplacement) {
-
-        boolean collision = false;
 
         for (int i = 0; i < 4; i++) {
 
             //the coordinates of the piece on the 22x12 board.
-            int x = (int) (_gameArray[i].getX()/Constants.SQUARE_WIDTH);
-            int y = (int) (_gameArray[i].getY()/Constants.SQUARE_WIDTH);
+            int x = (int) (_blockArray[i].getX()/Constants.SQUARE_WIDTH);
+            int y = (int) (_blockArray[i].getY()/Constants.SQUARE_WIDTH);
 
             //checks to see if the new location of the piece is already occupied
             if (_boardArray[y + yDisplacement][x + xDisplacement] != null) {
 
-                collision = true;
+                return true;
             }
         }
 
-        return collision;
+        return false;
     }
 
     /**
@@ -168,8 +185,8 @@ public class Blocks {
             for (int i = 0; i < 4; i++) {
 
                 //In the Constants class, the first pair of coordinates is the coordinates of the square used as the center of rotation
-                double newXLocation = _gameArray[0].getX() - _gameArray[0].getY() + _gameArray[i].getY();
-                double newYLocation = _gameArray[0].getY() + _gameArray[0].getX() - _gameArray[i].getX();
+                double newXLocation = _blockArray[0].getX() - _blockArray[0].getY() + _blockArray[i].getY();
+                double newYLocation = _blockArray[0].getY() + _blockArray[0].getX() - _blockArray[i].getX();
 
                 //coordinates of the new location on the 22x12 board
                 int x = (int) (newXLocation / Constants.SQUARE_WIDTH);
@@ -186,15 +203,15 @@ public class Blocks {
 
             for (int i = 0; i < 4; i++) {
 
-                double newXLocation = _gameArray[0].getX() - _gameArray[0].getY() + _gameArray[i].getY();
-                double newYLocation = _gameArray[0].getY() + _gameArray[0].getX() - _gameArray[i].getX();
+                double newXLocation = _blockArray[0].getX() - _blockArray[0].getY() + _blockArray[i].getY();
+                double newYLocation = _blockArray[0].getY() + _blockArray[0].getX() - _blockArray[i].getX();
 
                 if (!rotateCollision) {
 
-                    _gameArray[i].setX(newXLocation);
-                    _gameArray[i].setY(newYLocation);
-                    _gameArray2[i].setX(newXLocation);
-                    _gameArray2[i].setY(newYLocation);
+                    _blockArray[i].setX(newXLocation);
+                    _blockArray[i].setY(newYLocation);
+                    _blockArray2[i].setX(newXLocation);
+                    _blockArray2[i].setY(newYLocation);
                     _accentArray[i].setLayoutX(newXLocation);
                     _accentArray[i].setLayoutY(newYLocation);
                 }
@@ -253,66 +270,66 @@ public class Blocks {
      */
     public boolean rowIsFull(int i) {
 
-        boolean rowIsFull = true;
-
         for (int j = 0; j < 11; j++) {
 
             if (_boardArray[i][j] == null) {
 
-                rowIsFull = false;
+                return false;
             }
         }
 
-        return rowIsFull;
+        return true;
     }
 
     /**
-     * This method creates a border of squares on the board.
+     * This method creates a border of squares on the board using for loops, if statements, and the generateBorderBlock()
+     * method.
      */
     public void generateBorder() {
 
         for (int i = 0; i < 22; i++) {
+
             for (int j = 0; j < 12; j++) {
 
                 if (i == 0) {
 
-                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, 0,
-                            Constants.SQUARE_WIDTH, Color.BLACK);
-                    this.generateSquare(j*Constants.SQUARE_WIDTH, 0,
-                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
-                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, 0);
+                    this.generateBorderBlock(0, j, j*Constants.SQUARE_WIDTH, 0);
                 }
 
                 if (i == 21) {
 
-                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
-                            Constants.SQUARE_WIDTH, Color.BLACK);
-                    this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
-                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
-                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
+                    this.generateBorderBlock(21, j, j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
                 }
 
                 if (j == 0) {
 
-                    _boardArray[i][j] = this.generateSquare(0, i*Constants.SQUARE_WIDTH,
-                            Constants.SQUARE_WIDTH, Color.BLACK);
-                    this.generateSquare(0, i*Constants.SQUARE_WIDTH,
-                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
-                    this.generateAccentPolygon(0, i*Constants.SQUARE_WIDTH);
+                    this.generateBorderBlock(i, 0, 0, i*Constants.SQUARE_WIDTH);
                 }
 
                 if (j == 11) {
 
-                    _boardArray[i][j] = this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
-                            Constants.SQUARE_WIDTH, Color.BLACK);
-                    this.generateSquare(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH,
-                            Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
-                    this.generateAccentPolygon(j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
+                    this.generateBorderBlock(i, 11, j*Constants.SQUARE_WIDTH, i*Constants.SQUARE_WIDTH);
                 }
             }
         }
     }
 
+    /**
+     * This method is ued in the generateBorder() method to create squares for the border. The method passes in array
+     * indexes and square coordinates.
+     */
+    public void generateBorderBlock(int i, int j, int x, int y) {
+
+        _boardArray[i][j] = this.generateSquare(x, y, Constants.SQUARE_WIDTH, Color.BLACK);
+        _boardArray2[i][j] = this.generateSquare(x, y, Constants.COLOR_SQUARE_WIDTH, Color.DARKGRAY);
+        _accentBoardArray[i][j] = this.generateAccentPolygon(x, y);
+    }
+
+    /**
+     * This method passes in an x-coordinate, a y-coordinate, a side length, and a color and instantiates a square
+     * based on these values. It also graphically adds the square. The method then returns this created square. This
+     * method is used in the generateBorder() and the generateBlock() method.
+     */
     public Rectangle generateSquare(int x, int y, double width, Color color) {
 
         Rectangle square = new Rectangle(x, y, width, width);
@@ -321,6 +338,12 @@ public class Blocks {
         return square;
     }
 
+    /**
+     * This method instantiates a polygon based on coordinates defined in the Constants class. It then sets the location
+     * of the polygon based on the x and y coordinates passed in as arguments. It also makes the polygon white and adds
+     * it graphically. It returns this polygon. It is used in the generateBorder() and the generateBlock() method.
+     * This polygon is used to decorate each square.
+     */
     public Polygon generateAccentPolygon(int x, int y) {
 
         Polygon polygon = new Polygon(Constants.ACCENT_POLYGON_COORDS);
@@ -334,15 +357,16 @@ public class Blocks {
     /**
      * Using a for loop, this method creates a piece with 4 squares, adds it to _gameArray, adds it to _gamePane, and
      * sets the color, stroke color, and stroke width. This method takes in a double array of integers and a color as
-     * arguments and is called in the methods that generate the 7 pieces.
+     * arguments and is called in the generateRandomBlock() method. This method also calls the gameOver() method to
+     * check if the game is lost.
      */
     public void generateBlock(int[][] coords, Color color) {
 
         for (int i = 0; i < 4; i++) {
 
-            _gameArray[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
+            _blockArray[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
                     Constants.SQUARE_WIDTH + coords[i][1], Constants.SQUARE_WIDTH, Color.BLACK);
-            _gameArray2[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
+            _blockArray2[i] = this.generateSquare(Constants.MID_SCENE_WIDTH + coords[i][0],
                     Constants.SQUARE_WIDTH + coords[i][1], Constants.COLOR_SQUARE_WIDTH, color);
             _accentArray[i] = this.generateAccentPolygon(Constants.MID_SCENE_WIDTH + coords[i][0],
                     Constants.SQUARE_WIDTH + coords[i][1]);
@@ -351,27 +375,18 @@ public class Blocks {
         this.gameOver();
     }
 
+    /**
+     * This method uses the checkCollision() method to see if the location at which a piece generates is occupied. If
+     * it is occupied, it stops the timeline, stops the KeyHandler, and adds a "game over" label. It is called in the
+     * generateBlock() method.
+     */
     public void gameOver() {
 
-        boolean isGameOver = false;
-
-        for (int i = 0; i < 4; i++) {
-
-            //coordinates of the piece on the 22x12 board.
-            int x = (int) (_gameArray[i].getX()/Constants.SQUARE_WIDTH);
-            int y = (int) (_gameArray[i].getY()/Constants.SQUARE_WIDTH);
-
-            if (_boardArray[y][x] != null) {
-
-                isGameOver = true;
-            }
-        }
-
-        if (isGameOver) {
+        if (this.checkCollision(0,0) == true) {
 
             _timeline.stop();
             Label gameOverLabel = new Label("game over. do better <3");
-            gameOverLabel.setFont(Font.font(15));
+            gameOverLabel.setFont(Font.font(Constants.FONT_SIZE));
             gameOverLabel.setLayoutX(Constants.GAME_OVER_X);
             gameOverLabel.setLayoutY(Constants.LABEL_Y);
             _gamePane.getChildren().add(gameOverLabel);
@@ -380,105 +395,46 @@ public class Blocks {
     }
 
     /**
-     * Using a random number generator, this method randomly generates a piece. This is called at the beginning of the
-     * game and when a piece cannot fall anymore.
+     * Using a random number generator, this method randomly generates a piece by calling the generateBlock() method and
+     * passing in the corresponding coordinates. This is called at the beginning of the game or when a piece cannot
+     * fall anymore. This method uses a factory pattern design.
      */
     public void generateRandomBlock() {
+
+        _isOBlock = false;
 
         int integer = (int) (Math.random() * 7);
         switch (integer) {
 
             case 0:
-                this.generateTBlock();
+                //generates a T block
+                generateBlock(Constants.T_BLOCK_COORDS, Color.PLUM);
                 break;
             case 1:
-                this.generateIBlock();
+                //generates an I block
+                generateBlock(Constants.I_BLOCK_COORDS, Color.PALETURQUOISE);
                 break;
             case 2:
-                this.generateOBlock();
+                //generates an O block
+                _isOBlock = true;
+                generateBlock(Constants.O_BLOCK_COORDS, Color.KHAKI);
                 break;
             case 3:
-                this.generateJBlock();
+                //generates a J block
+                generateBlock(Constants.J_BLOCK_COORDS, Color.LIGHTSTEELBLUE);
                 break;
             case 4:
-                this.generateLBlock();
+                //generates an L block
+                generateBlock(Constants.L_BLOCK_COORDS, Color.LIGHTSALMON);
                 break;
             case 5:
-                this.generateSBlock();
+                //generates an S block
+                generateBlock(Constants.S_BLOCK_COORDS, Color.PALEGREEN);
                 break;
             case 6:
-                this.generateZBlock();
+                //generates a Z block
+                generateBlock(Constants.Z_BLOCK_COORDS, Color.PINK);
                 break;
         }
-    }
-
-    /**
-     * This method creates an I block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.CYAN. This is called in the generateRandomBlock() method.
-     */
-    public void generateIBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.I_BLOCK_COORDS, Color.PALETURQUOISE);
-    }
-
-    /**
-     * This method creates a T block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.PURPLE. This is called in the generateRandomBlock() method.
-     */
-    public void generateTBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.T_BLOCK_COORDS, Color.PLUM);
-    }
-
-    /**
-     * This method creates an O block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.YELLOW. This is called in the generateRandomBlock() method.
-     */
-    public void generateOBlock() {
-
-        _isOBlock = true;
-        generateBlock(Constants.O_BLOCK_COORDS, Color.KHAKI);
-    }
-
-    /**
-     * This method creates a J block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.BLUE. This is called in the generateRandomBlock() method.
-     */
-    public void generateJBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.J_BLOCK_COORDS, Color.LIGHTSTEELBLUE);
-    }
-
-    /**
-     * This method creates an L block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.ORANGE. This is called in the generateRandomBlock() method.
-     */
-    public void generateLBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.L_BLOCK_COORDS, Color.LIGHTSALMON);
-    }
-
-    /**
-     * This method creates an S block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.LIME. This is called in the generateRandomBlock() method.
-     */
-    public void generateSBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.S_BLOCK_COORDS, Color.PALEGREEN);
-    }
-
-    /**
-     * This method creates a Z block using the generateBlock method, passing in coordinates defined in the Constants
-     * class and Color.RED. This is called in the generateRandomBlock() method.
-     */
-    public void generateZBlock() {
-
-        _isOBlock = false;
-        generateBlock(Constants.Z_BLOCK_COORDS, Color.PINK);
     }
 }
